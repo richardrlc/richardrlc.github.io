@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personal Time Card</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <div id="loginForm" class="active" aria-live="polite">
+      <h1>Iniciar Sesión</h1>
+      <label for="username">Usuario</label>
+      <input type="text" id="username" placeholder="Tu usuario" autocomplete="username" />
+
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" placeholder="Tu contraseña" autocomplete="current-password" />
+
+      <button id="btnLogin" onclick="login()">Entrar</button>
+      <button class="secondary-btn" onclick="mostrarRegistro()">Registrar</button>
+    </div>
+
+    <div id="registerForm" aria-live="polite">
+      <h1>Registrar Usuario</h1>
+      <label for="newUsername">Nuevo usuario</label>
+      <input type="text" id="newUsername" placeholder="Nombre de usuario" />
+
+      <label for="newPassword">Contraseña</label>
+      <input type="password" id="newPassword" placeholder="Contraseña" />
+
+      <button onclick="registrarUsuario()">Registrar</button>
+      <button class="secondary-btn" onclick="mostrarLogin()">Volver a iniciar sesión</button>
+    </div>
+
+    <div id="mainContent" aria-live="polite">
+      <div class="header-row">
+        <h1>Personal Time Card</h1>
+        <div class="header-actions">
+          <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+      </div>
+
+      <div id="adminLinks" class="admin-links" style="display:none; margin: 10px 0;">
+        <button class="admin-btn" onclick="verUsuarios()">Ver usuarios registrados</button>
+        <button class="admin-btn" onclick="verRegistros()">Ver registros de todos</button>
+      </div>
+
+      <label for="fechaRegistro">Fecha del registro:</label>
+      <input type="date" id="fechaRegistro" onchange="mostrarHistorial()" />
+
+      <div class="row two-columns">
+        <div>
+          <label for="horaEntrada">Hora de entrada:</label>
+          <input type="time" id="horaEntrada" />
+        </div>
+        <div>
+          <label for="horaSalida">Hora de salida:</label>
+          <input type="time" id="horaSalida" />
+        </div>
+      </div>
+
+      <label for="direccion">Dirección de trabajo:</label>
+      <input type="text" id="direccion" placeholder="Escribe tu dirección...">
+
+      <div class="row two-columns">
+        <div>
+          <label for="tipoVehiculo">Tipo de vehículo:</label>
+          <select id="tipoVehiculo" onchange="cargarNumerosVehiculo()">
+            <option value="">Seleccione...</option>
+            <option value="PK">PK</option>
+            <option value="Vactor">Vactor</option>
+            <option value="TV">TV</option>
+          </select>
+        </div>
+        <div>
+          <label for="numeroVehiculo">Número de vehículo:</label>
+          <select id="numeroVehiculo">
+            <option value="">Seleccione un tipo primero</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="orden">Número de orden de trabajo:</label>
+      <input type="text" id="orden" placeholder="Ej: OT-001" />
+
+      <label for="personal">Descripción del personal en el job site:</label>
+      <textarea id="personal" placeholder="Ej: Juan Pérez - Operador, Luis Gómez - Asistente..."></textarea>
+
+      <div style="display:flex; justify-content:center; gap:12px; margin-top:10px;">
+        <button class="logout-btn" onclick="guardarDia()">Guardar día</button>
+        <button class="logout-btn" onclick="compartirHistorial()">Compartir</button>
+      </div>
+
+      <div class="result" id="resultado" role="status"></div>
+
+      <h2>Historial Semanal</h2>
+      <div id="semanalTabs">
+        <div id="tabButtons" role="tablist"></div>
+        <div id="tabContents" role="region" aria-live="polite"></div>
+      </div>
+
+      <div id="resumenSemanal" style="margin-top:20px; font-weight:700; color:#264653;"></div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal de compartir historial -->
+  <div id="shareModal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:9999;">
+    <div style="background:#ffffff; border-radius:12px; padding:20px; max-width:350px; width:90%; box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08); text-align:center;">
+      <h2 style="margin-top:0; color:#264653;">Compartir historial</h2>
+      <p>Seleccione cómo desea compartir el historial:</p>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
+        <button class="logout-btn" onclick="shareVia('whatsapp')">WhatsApp</button>
+        <button class="logout-btn" onclick="shareVia('email')">Correo electrónico</button>
+        <button class="logout-btn" onclick="shareVia('sms')">SMS</button>
+        <button class="secondary-btn" onclick="shareVia('clipboard')">Copiar al portapapeles</button>
+        <button class="secondary-btn" style="background:#e76f51;" onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
