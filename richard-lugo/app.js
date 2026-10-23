@@ -18,5 +18,41 @@ document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click'
 document.querySelectorAll('[data-brief]').forEach(b=>b.addEventListener('click',()=>{closeNav();brief.showModal()}));document.querySelector('#caseClose').addEventListener('click',()=>modal.close());document.querySelector('#briefClose').addEventListener('click',()=>brief.close());[modal,brief].forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()}}));
 document.querySelector('#briefForm').addEventListener('submit',e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target)),sel=e.target.elements.service;briefText=locale==='es'?`Idea de proyecto\n\nNombre: ${data.name}\nEmpresa o actividad: ${data.business}\nNecesidad: ${sel.options[sel.selectedIndex].text}\n\n${data.idea}`:`Project idea\n\nName: ${data.name}\nBusiness or activity: ${data.business}\nNeed: ${sel.options[sel.selectedIndex].text}\n\n${data.idea}`;document.querySelector('#briefPreview').textContent=briefText;const emailLink=document.querySelector('#emailBrief');emailLink.href='mailto:rlugocarrera@gmail.com?subject='+encodeURIComponent(locale==='es'?'Consulta de proyecto web':'Website project inquiry')+'&body='+encodeURIComponent(briefText);emailLink.hidden=false;document.querySelector('#copyBrief').hidden=false;document.querySelector('#briefStatus').textContent=locale==='es'?'Resumen preparado. Abre tu correo para revisarlo y enviarlo a Richard.':'Brief prepared. Open your email app to review it and send it to Richard.'});document.querySelector('#copyBrief').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(briefText);document.querySelector('#briefStatus').textContent=locale==='es'?'Resumen copiado.':'Brief copied.'}catch{document.querySelector('#briefStatus').textContent=locale==='es'?'Selecciona y copia el resumen que aparece arriba.':'Select and copy the brief displayed above.'}});
 
-// Optional pause for decorative movement; never affects navigation.
-(()=>{const button=document.getElementById('motionToggle'),hero=document.querySelector('.motion-hero');if(!button||!hero)return;button.addEventListener('click',()=>{const paused=hero.classList.toggle('motion-paused');button.setAttribute('aria-pressed',String(paused));button.setAttribute('aria-label',paused?'Reanudar animación / Resume animation':'Pausar animación / Pause animation');button.firstElementChild.textContent=paused?'▶':'Ⅱ'})})();
+
+// Floating shapes use the browser animation API so phone settings can be
+// overridden explicitly through a visible, persistent motion control.
+(()=>{
+ const hero=document.querySelector('.motion-hero'),button=document.getElementById('motionToggle');
+ if(!hero||!button)return;
+ const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+ let saved=null;try{saved=localStorage.getItem('richard-motion')}catch{}
+ let enabled=saved===null?!reduce.matches:saved==='on',animations=[],small=innerWidth<=650;
+ const paths={
+  '.shape-sun':small?['translate3d(-65px,-5px,0)','translate3d(60px,25px,0)']:['translate3d(-100px,-15px,0)','translate3d(160px,30px,0)'],
+  '.shape-blue':small?['translate3d(0,-50px,0) rotate(-15deg)','translate3d(-14px,70px,0) rotate(125deg)']:['translate3d(-8px,-65px,0) rotate(-10deg)','translate3d(30px,110px,0) rotate(110deg)'],
+  '.shape-green':small?['translate3d(0,-50px,0) rotate(20deg)','translate3d(-45px,35px,0) rotate(-15deg)']:['translate3d(10px,-90px,0) rotate(25deg)','translate3d(-150px,10px,0) rotate(-15deg)'],
+  '.shape-rose':small?['translate3d(0,-65px,0)','translate3d(10px,70px,0) rotate(140deg)']:['translate3d(-5px,-80px,0)','translate3d(25px,115px,0) rotate(120deg)']
+ };
+ function label(){
+  const en=document.documentElement.lang==='en';
+  const text=enabled?(en?'Pause motion':'Pausar movimiento'):(en?'Enable motion':'Activar movimiento');
+  button.textContent=(enabled?'Ⅱ ':'▶ ')+text;
+  button.setAttribute('aria-label',text);button.setAttribute('aria-pressed',String(enabled));
+  hero.classList.toggle('motion-paused',!enabled);
+ }
+ function sync(){
+  animations.forEach(a=>{if(enabled&&!document.hidden)a.play();else a.pause()});
+  label();
+ }
+ Object.entries(paths).forEach(([selector,frames],i)=>{
+  const el=hero.querySelector(selector);
+  if(el&&typeof el.animate==='function'){
+   const animation=el.animate(frames.map(transform=>({transform})),{duration:[7000,6000,8000,6500][i],iterations:Infinity,direction:'alternate',easing:'ease-in-out',fill:'both'});
+   animations.push(animation);
+  }
+ });
+ button.addEventListener('click',()=>{enabled=!enabled;try{localStorage.setItem('richard-motion',enabled?'on':'off')}catch{}sync()});
+ document.addEventListener('visibilitychange',sync);
+ document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',label));
+ sync();
+})();
