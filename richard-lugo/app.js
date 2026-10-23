@@ -19,28 +19,16 @@ document.querySelectorAll('[data-brief]').forEach(b=>b.addEventListener('click',
 // Floating shapes use the browser animation API so phone settings can be
 // overridden explicitly through a visible, persistent motion control.
 (()=>{
- const hero=document.querySelector('.motion-hero'),button=document.getElementById('motionToggle');
- if(!hero||!button)return;
- const reduce=matchMedia('(prefers-reduced-motion: reduce)');
- let saved=null;try{saved=localStorage.getItem('richard-motion')}catch{}
- let enabled=saved===null?!reduce.matches:saved==='on',animations=[],small=innerWidth<=650;
+ const hero=document.querySelector('.motion-hero');
+ if(!hero)return;
+ let animations=[],small=innerWidth<=650,visible=true;
  const paths={
   '.shape-sun':small?['translate3d(-65px,-5px,0)','translate3d(60px,25px,0)']:['translate3d(-100px,-15px,0)','translate3d(160px,30px,0)'],
   '.shape-blue':small?['translate3d(0,-50px,0) rotate(-15deg)','translate3d(-14px,70px,0) rotate(125deg)']:['translate3d(-8px,-65px,0) rotate(-10deg)','translate3d(30px,110px,0) rotate(110deg)'],
   '.shape-green':small?['translate3d(0,-50px,0) rotate(20deg)','translate3d(-45px,35px,0) rotate(-15deg)']:['translate3d(10px,-90px,0) rotate(25deg)','translate3d(-150px,10px,0) rotate(-15deg)'],
   '.shape-rose':small?['translate3d(0,-65px,0)','translate3d(10px,70px,0) rotate(140deg)']:['translate3d(-5px,-80px,0)','translate3d(25px,115px,0) rotate(120deg)']
  };
- function label(){
-  const en=document.documentElement.lang==='en';
-  const text=enabled?(en?'Pause motion':'Pausar movimiento'):(en?'Enable motion':'Activar movimiento');
-  button.textContent=(enabled?'Ⅱ ':'▶ ')+text;
-  button.setAttribute('aria-label',text);button.setAttribute('aria-pressed',String(enabled));
-  hero.classList.toggle('motion-paused',!enabled);
- }
- function sync(){
-  animations.forEach(a=>{if(enabled&&!document.hidden)a.play();else a.pause()});
-  label();
- }
+ function sync(){animations.forEach(a=>{if(visible&&!document.hidden)a.play();else a.pause()})}
  Object.entries(paths).forEach(([selector,frames],i)=>{
   const el=hero.querySelector(selector);
   if(el&&typeof el.animate==='function'){
@@ -48,8 +36,7 @@ document.querySelectorAll('[data-brief]').forEach(b=>b.addEventListener('click',
    animations.push(animation);
   }
  });
- button.addEventListener('click',()=>{enabled=!enabled;try{localStorage.setItem('richard-motion',enabled?'on':'off')}catch{}sync()});
  document.addEventListener('visibilitychange',sync);
- document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',label));
+ if('IntersectionObserver' in window){new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync()},{threshold:0}).observe(hero)}
  sync();
 })();
